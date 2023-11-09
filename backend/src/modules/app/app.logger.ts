@@ -26,7 +26,6 @@ const getSlackTransport = () => {
   const username = process.env.SLACK_LOGGER_USERNAME;
   const iconUrl = process.env.SLACK_LOGGER_ICON_URL;
 
-  return new SlackWebHook({
     level: 'error',
     webhookUrl,
     channel,
