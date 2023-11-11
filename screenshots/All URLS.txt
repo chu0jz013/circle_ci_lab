@@ -1,0 +1,9 @@
+URL 01 - https://github.com/chu0jz013/circle_ci_lab
+
+URL 02 - http://udapeople-172893804261.s3-website-us-east-1.amazonaws.com
+
+URL 03 - https://dimzhv1b4sa9y.cloudfront.net
+
+URL 04 - https://ec2-54-221-70-88.compute-1.amazonaws.com:3030/api/status
+
+URL 05 - 
