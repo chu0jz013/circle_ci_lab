@@ -298,6 +298,7 @@ jobs:
           command: |
             yum install -y tar gzip curl
             curl -sL https://rpm.nodesource.com/setup_13.x | bash -
+            yum update -y
             yum install -y nodejs
 
       - run:
