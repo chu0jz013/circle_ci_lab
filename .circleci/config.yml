@@ -260,7 +260,7 @@ jobs:
             cat backend/.env         
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml -v
-      - destroy-environment
+      # - destroy-environment
 
   run-migrations:
     docker:
@@ -279,7 +279,7 @@ jobs:
           name: Send migration status to kvdb.io
           command: |
            
-      - destroy-environment
+      # - destroy-environment
       # - revert-migrations
 
   deploy-frontend:
@@ -297,11 +297,7 @@ jobs:
           name: Get backend url
           command: |
             # your code here
-
             echo "45e7fb5"
-
-
-
             export BACKEND_PUBLIC_IP=$(aws --region us-east-1 ec2 describe-instances --filters "Name=tag:Name,Values=backend-45e7fb5" --query 'Reservations[*].Instances[*].PublicDnsName' --output text)
             export API_URL="http://${BACKEND_PUBLIC_IP}:3030"
             echo "${API_URL}"
@@ -324,7 +320,7 @@ jobs:
             aws s3 cp dist s3://udapeople-45e7fb5 --recursive
       # Here's where you will add some code to rollback on failure
       # - revert-migrations
-      - destroy-environment
+      # - destroy-environment
 
   deploy-backend:
     docker:
@@ -371,7 +367,7 @@ jobs:
             ansible-playbook -i inventory.txt deploy-backend.yml -v
       # Here's where you will add some code to rollback on failure
       # - revert-migrations
-      - destroy-environment
+      # - destroy-environment
 
   smoke-test:
     docker:
@@ -410,7 +406,7 @@ jobs:
               exit 1
             fi
       # - destroy-environment
-      - revert-migrations
+      # - revert-migrations
 
   cloudfront-update:
     docker:
@@ -427,7 +423,7 @@ jobs:
                     --region us-east-1 \
                     --tags project=udapeople
       # - revert-migrations
-      - destroy-environment
+      # - destroy-environment
 
   cleanup:
     docker:
