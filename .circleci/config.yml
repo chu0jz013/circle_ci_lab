@@ -10,7 +10,7 @@ commands:
     parameters:
       Workflow_ID:
         type: string
-        default: 45e7fb5
+        default: ${CIRCLE_WORKFLOW_ID:0:7}
         
     steps:
       - run:
@@ -41,7 +41,7 @@ commands:
     parameters:
       Workflow_ID:
         type: string
-        default: 45e7fb5
+        default: ${CIRCLE_WORKFLOW_ID:0:7}
     steps:
       - run:
           name: Revert migrations
@@ -184,8 +184,8 @@ jobs:
             aws iam list-users
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
-              --stack-name "udapeople-backend-45e7fb5" \
-              --parameter-overrides ID="45e7fb5"  \
+              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
               --tags project=udapeople
               #--tags project=your-tag \
               # --stack-name "your back-end stack name with workflow id" \
@@ -197,8 +197,8 @@ jobs:
             aws iam list-users
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
-              --stack-name "udapeople-backend-45e7fb5" \
-              --parameter-overrides ID="45e7fb5"  \
+              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
               --tags project=udapeople
               #--tags project=your-tag \
               # --stack-name "your front-end stack name with workflow id" \
@@ -208,8 +208,8 @@ jobs:
           name: Add back-end ip to ansible inventory
           command: |
             # Your code here
-            echo "45e7fb5"
-            BACKEND_PUBLIC_IP=$(aws --region us-east-1 ec2 describe-instances --filters "Name=tag:Name,Values=backend-45e7fb5" --query 'Reservations[*].Instances[*].PublicDnsName' --output text)
+            echo "${CIRCLE_WORKFLOW_ID:0:7}"
+            BACKEND_PUBLIC_IP=$(aws --region us-east-1 ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --query 'Reservations[*].Instances[*].PublicDnsName' --output text)
             echo $BACKEND_PUBLIC_IP >> .circleci/ansible/inventory.txt
             cat .circleci/ansible/inventory.txt
 
@@ -219,7 +219,7 @@ jobs:
             - project/.circleci/ansible/inventory.txt
 
       # Here's where you will add some code to rollback on failure
-      # - destroy-environment
+      - destroy-environment
 
   configure-infrastructure:
     docker:
@@ -260,7 +260,7 @@ jobs:
             cat backend/.env         
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml -v
-      # - destroy-environment
+      - destroy-environment
 
   run-migrations:
     docker:
@@ -279,8 +279,8 @@ jobs:
           name: Send migration status to kvdb.io
           command: |
            
-      # - destroy-environment
-      # - revert-migrations
+      - destroy-environment
+      - revert-migrations
 
   deploy-frontend:
     docker:
@@ -297,8 +297,8 @@ jobs:
           name: Get backend url
           command: |
             # your code here
-            echo "45e7fb5"
-            export BACKEND_PUBLIC_IP=$(aws --region us-east-1 ec2 describe-instances --filters "Name=tag:Name,Values=backend-45e7fb5" --query 'Reservations[*].Instances[*].PublicDnsName' --output text)
+            echo "${CIRCLE_WORKFLOW_ID:0:7}"
+            export BACKEND_PUBLIC_IP=$(aws --region us-east-1 ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --query 'Reservations[*].Instances[*].PublicDnsName' --output text)
             export API_URL="http://${BACKEND_PUBLIC_IP}:3030"
             echo "${API_URL}"
             echo API_URL="http://${BACKEND_PUBLIC_IP}:3030" >> frontend/.env
@@ -316,11 +316,11 @@ jobs:
             cd frontend
             npm install
             npm run build
-            tar -czvf artifact-"45e7fb5".tar.gz dist
-            aws s3 cp dist s3://udapeople-45e7fb5 --recursive
+            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       # Here's where you will add some code to rollback on failure
-      # - revert-migrations
-      # - destroy-environment
+      - revert-migrations
+      - destroy-environment
 
   deploy-backend:
     docker:
@@ -366,8 +366,8 @@ jobs:
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml -v
       # Here's where you will add some code to rollback on failure
-      # - revert-migrations
-      # - destroy-environment
+      - revert-migrations
+      - destroy-environment
 
   smoke-test:
     docker:
@@ -383,7 +383,7 @@ jobs:
       - run:
           name: Backend smoke test.
           command: |
-            export BACKEND_PUBLIC_IP=$(aws --region us-east-1 ec2 describe-instances --filters "Name=tag:Name,Values=backend-45e7fb5" --query 'Reservations[*].Instances[*].PublicDnsName' --output text)
+            export BACKEND_PUBLIC_IP=$(aws --region us-east-1 ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --query 'Reservations[*].Instances[*].PublicDnsName' --output text)
             export API_URL="http://${BACKEND_PUBLIC_IP}:3030"
             echo "${API_URL}"  #   curl -s ${API_URL}/api/status -v 
             if curl -s ${API_URL}/api/status | grep "ok"
@@ -396,7 +396,7 @@ jobs:
       - run:
           name: Frontend smoke test.
           command: |
-            URL="http://udapeople-45e7fb5.s3-website-us-east-1.amazonaws.com/#/employees"            
+            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/#/employees"            
             echo ${URL} 
             if curl -s ${URL} | grep "Welcome"
             then
@@ -405,8 +405,8 @@ jobs:
             else
               exit 1
             fi
-      # - destroy-environment
-      # - revert-migrations
+      - destroy-environment
+      - revert-migrations
 
   cloudfront-update:
     docker:
@@ -419,11 +419,11 @@ jobs:
             aws cloudformation deploy \
                     --template-file .circleci/files/cloudfront.yml \
                     --stack-name InitialStack \
-                    --parameter-overrides WorkflowID="45e7fb5" \
+                    --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
                     --region us-east-1 \
                     --tags project=udapeople
-      # - revert-migrations
-      # - destroy-environment
+      - revert-migrations
+      - destroy-environment
 
   cleanup:
     docker:
@@ -468,8 +468,8 @@ workflows:
               only: [master]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
-      # - run-migrations:
-      #     requires: [configure-infrastructure]
+      - run-migrations:
+          requires: [configure-infrastructure]
       - deploy-frontend:
           requires: [configure-infrastructure]
       - deploy-backend:
